@@ -32,7 +32,7 @@ export default {
 
         try {
           const response = await axios.post("http://localhost:8080/gpt", {
-            messages: this.conversation[length(this.conversation)-1],
+            messages: this.conversation,
           });
 
           this.conversation.push({
