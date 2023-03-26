@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
-        "time"
+	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -12,21 +14,37 @@ import (
 )
 
 const (
-	APIKey     = ""
-	APIBaseURL = "https://api.openai.com/v1/engines/text-davinci-002/completions"
+	APIBaseURL = "https://api.openai.com/v1/chat/completions"
 )
 
+type Message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 type OpenAIRequest struct {
-	Prompt string `json:"prompt"`
+	Messages []Message `json:"messages"`
 }
 
 type OpenAIResponse struct {
 	Choices []struct {
-		Text string `json:"text"`
+		message Message
+		index   int
 	} `json:"choices"`
 }
 
+var APIKey string
+
 func main() {
+	apiKey := flag.String("key", "", "API key for the service")
+	// Parse the command-line arguments
+	flag.Parse()
+	// Check if the API key was provided
+	if *apiKey == "" {
+		fmt.Println("Please provide an API key using the -key flag")
+		os.Exit(1)
+	}
+	APIKey = *apiKey
 	router := gin.Default()
 	// Configure CORS settings
 	router.Use(cors.New(cors.Config{
@@ -51,7 +69,7 @@ func handleGPTRequest(c *gin.Context) {
 		return
 	}
 
-	response, err := generateText(openAIReq.Prompt)
+	response, err := generateText(openAIReq.Messages)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -60,16 +78,16 @@ func handleGPTRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"response": response})
 }
 
-func generateText(prompt string) (string, error) {
+func generateText(messages []Message) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"prompt":     prompt,
-		"max_tokens": 8096,
+		"messages":    messages,
+		"max_tokens":  100,
+		"temperature": 0.7,
+		"model":       "gpt-3.5-turbo",
 	})
-
 	if err != nil {
 		return "", err
 	}
-
 	req := fasthttp.AcquireRequest()
 	req.SetRequestURI(APIBaseURL)
 	req.Header.SetContentType("application/json")
@@ -99,6 +117,9 @@ func generateText(prompt string) (string, error) {
 	if len(openAIRes.Choices) == 0 {
 		return "", fmt.Errorf("No choices returned from API")
 	}
-
-	return openAIRes.Choices[0].Text, nil
+	b, err := json.MarshalIndent(openAIRes.Choices[0], "", " ")
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
