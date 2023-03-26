@@ -63,7 +63,7 @@ func handleGPTRequest(c *gin.Context) {
 func generateText(prompt string) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"prompt":     prompt,
-		"max_tokens": 50,
+		"max_tokens": 8096,
 	})
 
 	if err != nil {
