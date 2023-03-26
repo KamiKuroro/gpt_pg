@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+        "time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/valyala/fasthttp"
 )
@@ -26,6 +28,17 @@ type OpenAIResponse struct {
 
 func main() {
 	router := gin.Default()
+	// Configure CORS settings
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowWildcard:    true,
+		MaxAge:           12 * time.Hour,
+	}))
+	router.Static("/", "dist")
 	router.POST("/gpt", handleGPTRequest)
 	router.Run(":8080")
 }
@@ -49,7 +62,7 @@ func handleGPTRequest(c *gin.Context) {
 
 func generateText(prompt string) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
-		"prompt":   prompt,
+		"prompt":     prompt,
 		"max_tokens": 50,
 	})
 
@@ -89,4 +102,3 @@ func generateText(prompt string) (string, error) {
 
 	return openAIRes.Choices[0].Text, nil
 }
-
