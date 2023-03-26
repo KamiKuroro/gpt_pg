@@ -37,7 +37,7 @@ export default {
 
           this.conversation.push({
             role: "assistant",
-            content: response.data.choices[0].text,
+            content: response.data.content,
           });
         } catch (error) {
           console.error("Error:", error);
