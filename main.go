@@ -120,9 +120,9 @@ func generateText(messages []Message) (string, error) {
 	if len(openAIRes.ChoiceList) == 0 {
 		return "", fmt.Errorf("No choices returned from API")
 	}
-	b, err := json.MarshalIndent(openAIRes.ChoiceList[0], "", " ")
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
+	//b, err := json.MarshalIndent(openAIRes.ChoiceList[0], "", " ")
+	//if err != nil {
+	//	return "", err
+	//}
+	return openAIRes.ChoiceList[0].Msg.Content, nil
 }
