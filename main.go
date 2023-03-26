@@ -22,15 +22,18 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+type Choice struct {
+	Msg          Message `json:"message"`
+	FinishReason string  `json:"finish_reason"`
+	Index        int     `json:"index"`
+}
+
 type OpenAIRequest struct {
 	Messages []Message `json:"messages"`
 }
 
 type OpenAIResponse struct {
-	Choices []struct {
-		message Message
-		index   int
-	} `json:"choices"`
+	ChoiceList []Choice `json:"choices"`
 }
 
 var APIKey string
@@ -58,7 +61,7 @@ func main() {
 	}))
 	router.Static("/", "dist")
 	router.POST("/gpt", handleGPTRequest)
-	router.Run(":8080")
+	_ = router.Run(":8080")
 }
 
 func handleGPTRequest(c *gin.Context) {
@@ -81,9 +84,9 @@ func handleGPTRequest(c *gin.Context) {
 func generateText(messages []Message) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"messages":    messages,
+		"model":       "gpt-3.5-turbo",
 		"max_tokens":  100,
 		"temperature": 0.7,
-		"model":       "gpt-3.5-turbo",
 	})
 	if err != nil {
 		return "", err
@@ -114,10 +117,10 @@ func generateText(messages []Message) (string, error) {
 		return "", err
 	}
 
-	if len(openAIRes.Choices) == 0 {
+	if len(openAIRes.ChoiceList) == 0 {
 		return "", fmt.Errorf("No choices returned from API")
 	}
-	b, err := json.MarshalIndent(openAIRes.Choices[0], "", " ")
+	b, err := json.MarshalIndent(openAIRes.ChoiceList[0], "", " ")
 	if err != nil {
 		return "", err
 	}
