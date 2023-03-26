@@ -85,7 +85,7 @@ func generateText(messages []Message) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"messages":    messages,
 		"model":       "gpt-3.5-turbo",
-		"max_tokens":  100,
+		"max_tokens":  2048,
 		"temperature": 0.7,
 	})
 	if err != nil {
@@ -120,9 +120,5 @@ func generateText(messages []Message) (string, error) {
 	if len(openAIRes.ChoiceList) == 0 {
 		return "", fmt.Errorf("No choices returned from API")
 	}
-	//b, err := json.MarshalIndent(openAIRes.ChoiceList[0], "", " ")
-	//if err != nil {
-	//	return "", err
-	//}
 	return openAIRes.ChoiceList[0].Msg.Content, nil
 }

@@ -32,12 +32,12 @@ export default {
 
         try {
           const response = await axios.post("http://localhost:8080/gpt", {
-            messages: this.conversation,
+            messages: this.conversation[length(this.conversation)-1],
           });
 
           this.conversation.push({
             role: "assistant",
-            content: response.data.choices[0].content,
+            content: response.data.response,
           });
         } catch (error) {
           console.error("Error:", error);
