@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -32,8 +33,15 @@ type OpenAIRequest struct {
 	Messages []Message `json:"messages"`
 }
 
+type Usage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+}
+
 type OpenAIResponse struct {
 	ChoiceList []Choice `json:"choices"`
+	UsageInfo  Usage    `json:"usage"`
 }
 
 var APIKey string
@@ -116,9 +124,13 @@ func generateText(messages []Message) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	b, err := json.Marshal(openAIRes.UsageInfo)
+	if err != nil {
+		return "", err
+	}
+	log.Println(string(b))
 	if len(openAIRes.ChoiceList) == 0 {
-		return "", fmt.Errorf("No choices returned from API")
+		return "", fmt.Errorf("no choices returned from API")
 	}
 	return openAIRes.ChoiceList[0].Msg.Content, nil
 }
