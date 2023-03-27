@@ -32,12 +32,7 @@ export default {
 
         try {
           const response = await axios.post("http://localhost:8080/gpt", {
-            messages: [
-              {
-                role: "user",
-                content: this.userInput,
-              },
-            ],
+            messages: this.conversation,
           });
 
           this.conversation.push({

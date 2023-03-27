@@ -85,7 +85,7 @@ func generateText(messages []Message) (string, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"messages":    messages,
 		"model":       "gpt-3.5-turbo",
-		"max_tokens":  2048,
+		"max_tokens":  512,
 		"temperature": 0.7,
 	})
 	if err != nil {
